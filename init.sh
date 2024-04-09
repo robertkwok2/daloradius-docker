@@ -7,13 +7,10 @@ echo 'echo "Initialization error" 1>&2' >> /cbs/init.sh
 
 DEBIAN_FRONTEND=noninteractive
 
-# wait for MySQL-Server to be ready
-while ! mysqladmin ping -h"$MYSQL_HOST" --silent; do
-    sleep 20
-done
+
 
 # check if the database if empty
-table_count=$(mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -se "SELECT COUNT(DISTINCT \`table_name\`) FROM \`information_schema\`.\`columns\` WHERE \`table_schema\` = '$MYSQL_DATABASE'")
+table_count=$(mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" -se "SELECT COUNT(DISTINCT \`table_name\`) FROM \`information_schema\`.\`columns\` WHERE \`table_schema\` = '$MYSQL_DATABASE'")
 if [[ $table_count -gt 0 ]]
 then
   echo "database is not empty, skip importing"
@@ -21,8 +18,8 @@ else
   echo "database is empty, go to importing"
 
   # Seed Database
-  mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < /etc/freeradius/3.0/mods-config/sql/main/mysql/schema.sql 
-  mysql -h "$MYSQL_HOST" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < /var/www/html/contrib/db/mysql-daloradius.sql 
+  mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < /etc/freeradius/3.0/mods-config/sql/main/mysql/schema.sql 
+  mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE" < /var/www/html/contrib/db/mysql-daloradius.sql 
 fi
 
 # set Database connection
